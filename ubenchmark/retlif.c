@@ -145,34 +145,15 @@ unsigned int init_ebpf_prog(void)
     prog->jited = 0;
     prog->orig_prog = NULL;
     prog->len = attr.insn_cnt;
-#if 0
-    printf("bpf_prog_size(attr.insn_cnt): %lu\n", bpf_prog_size(attr.insn_cnt));
-    printf("Prog len : %d, insns: %p, insnsi: %p\n",prog->len, attr.insns, prog->insnsi);
-    printf("sizeof(struct bpf_insn) %d\n", sizeof(struct bpf_insn));
-#endif
     if (memcpy(prog->insnsi, u64_to_ptr(attr.insns), prog->len * sizeof(struct bpf_insn)) != 0)
         atomic_set(&prog->aux->refcnt, 1);
     prog->aux->is_gpl_compatible = 1;
 
-    //TODO eBPF Verifier - find a way to get it working
-    //    char *sym_name = "bpf_check";
-    //    unsigned long sym_addr = kallsyms_lookup_name(sym_name);
-    //    int (*bpf_check)(struct bpf_prog*, union bpf_attr*) = (int (*)(struct bpf_prog*, union bpf_attr*) ) sym_addr;
-    //    ret = bpf_check(prog, &attr);
-
-#if 1
-    // Time to see if some BPF_CALL is being done in the code
-    // Should be done after verifier. It replaces the calls with
-    // actual functions to call
-
     fixup_bpf_calls(prog);
-#endif
 
     // ready for JIT
     bpf_prog_select_runtime(prog);
-    //printf("JITed? : %d\n", prog->jited);
 
-    /* set context values */
     return ret;
 }
 
